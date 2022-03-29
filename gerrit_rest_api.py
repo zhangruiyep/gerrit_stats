@@ -1,8 +1,9 @@
 import requests
 import json
 import datetime
-from bokeh.plotting import figure, show
+from bokeh.plotting import figure, show, output_file, save
 from bokeh.models import ColumnDataSource
+from bokeh.layouts import gridplot
 
 class gerritDate():
     def __init__(self, delta):
@@ -48,6 +49,14 @@ class gerritCounter():
                 self.users.append(ch['owner']['username'])
         return self.users
 
+    def getLinesByUser(self, userName):
+        self.userLines = 0
+        for ch in self.changes:
+            if ch['owner']['username'] == userName:
+                self.userLines += ch['insertions']
+                self.userLines += ch['deletions']
+        return self.userLines
+
 gDate = gerritDate(-7)
 #UTC time
 startDate = gDate.get() + ' 00:00:00'
@@ -77,21 +86,32 @@ print(changes)
 counter = gerritCounter(changes)
 users = counter.getUsers()
 all_commits = []
+lines = []
 for user in users:
     #print(user +  str(counter.getCountByUser(user)))
     all_commits.append(counter.getCountByUser(user))
+    lines.append(counter.getLinesByUser(user))
 print(users)
 print(all_commits)
+print(lines)
 
-source = ColumnDataSource(data=dict(username=users, commits=all_commits))
+html = 'gerrit_stats_' + datetime.datetime.now().strftime('%Y%m%d') + '.html'
+output_file(filename=html, title="Gerrit Stats Weekly")
+
+source = ColumnDataSource(data=dict(username=users, commits=all_commits, lines=lines))
 # 创建一个包含标签的data，对象类型为ColumnDataSource
 
-p = figure(x_range=users, y_range=(0,max(all_commits)*1.1), plot_height=350, title="Gerrit Stats") #x_range一开始就要设置成一个字符串的列表；要一一对应
+#p = figure(x_range=users, y_range=(0,max(all_commits)*1.1), plot_height=350, title="Gerrit Stats") #x_range一开始就要设置成一个字符串的列表；要一一对应
+pCommits = figure(x_range=users, plot_height=350, title="Gerrit Stats Commits") #x_range一开始就要设置成一个字符串的列表；要一一对应
 
-p.vbar(x='username', top='commits', source=source,    # 加载数据另一个方式
+pCommits.vbar(x='username', top='commits', source=source,    # 加载数据另一个方式
        width=0.6, alpha = 0.8, legend_label="commits"
        #color = factor_cmap('fruits', palette=Spectral6, factors=fruits),    # 设置颜色
        #legend="fruits")
+       )
+pLines = figure(x_range=users, plot_height=350, title="Gerrit Stats Lines")
+pLines.vbar(x='username', top='lines', source=source,    # 加载数据另一个方式
+       width=0.6, alpha = 0.8, legend_label="lines"
        )
 # 绘制柱状图，横轴直接显示标签
 # factor_cmap(field_name, palette, factors, start=0, end=None, nan_color='gray')：颜色转换模块，生成一个颜色转换对象
@@ -99,10 +119,11 @@ p.vbar(x='username', top='commits', source=source,    # 加载数据另一个方式
 # palette：调色盘
 # factors：用于在调色盘中分颜色的参数
 # 参考文档：http://bokeh.pydata.org/en/latest/docs/reference/transform.html
+p = gridplot([[pCommits, pLines]])
 
-p.xgrid.grid_line_color = None
-p.legend.orientation = "horizontal"
-p.legend.location = "top_center"
+#p.xgrid.grid_line_color = None
+#p.legend.orientation = "horizontal"
+#p.legend.location = "top_center"
 # 其他参数设置
 #cmd -->> conda install bokeh  ;  conda install json
-show(p)
+save(p)
