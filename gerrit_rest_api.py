@@ -2,7 +2,7 @@ import requests
 import json
 import datetime
 from bokeh.plotting import figure, show, output_file, save
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, Tabs, Panel
 from bokeh.layouts import gridplot
 
 class gerritDate():
@@ -57,33 +57,37 @@ class gerritCounter():
                 self.userLines += ch['deletions']
         return self.userLines
 
-gDate = gerritDate(-7)
-#UTC time
-startDate = gDate.get() + ' 00:00:00'
-print(startDate)
-options = '?q=status:merged+after:\"' + startDate + '\"&o=DETAILED_ACCOUNTS'
-gUrl = gerritUrl('dal-server-2:8081', options, 'admin', 'admin')
-url = gUrl.get()
+class gerritChanges():
+    def __init__(self, server):
+        gDate = gerritDate(-7)
+        #UTC time
+        startDate = gDate.get() + ' 00:00:00'
+        #print(startDate)
+        options = '?q=status:merged+after:\"' + startDate + '\"&o=DETAILED_ACCOUNTS'
+        gUrl = gerritUrl(server, options, 'admin', 'admin')
+        self.url = gUrl.get()
 
-print(url)
-resp = requests.get(url)
+    def get(self):
+        resp = requests.get(self.url)
+        #print(resp)
+        #print(resp.headers)
+        #print(resp.content)
 
-print(resp)
-#print(resp.headers)
-#print(resp.content)
+        if resp.status_code != 200:
+            quit()
 
-if resp.status_code != 200:
-    quit()
+        #print(resp.content)
+        text = resp.content
+        json_str = text.decode('UTF-8')[5:]
+        #print(json_str)
 
-#print(resp.content)
-text = resp.content
-json_str = text.decode('UTF-8')[5:]
-#print(json_str)
+        self.changes = json.loads(json_str)
+        print(self.changes)
 
-changes = json.loads(json_str)
-print(changes)
+        return self.changes
 
-counter = gerritCounter(changes)
+changes = gerritChanges('dal-server-2:8081')
+counter = gerritCounter(changes.get())
 users = counter.getUsers()
 all_commits = []
 lines = []
@@ -101,29 +105,28 @@ output_file(filename=html, title="Gerrit Stats Weekly")
 source = ColumnDataSource(data=dict(username=users, commits=all_commits, lines=lines))
 # 创建一个包含标签的data，对象类型为ColumnDataSource
 
+tipsCommits = [
+    ("owner", "@username"),
+    ("commits", "@commits"),
+]
+
 #p = figure(x_range=users, y_range=(0,max(all_commits)*1.1), plot_height=350, title="Gerrit Stats") #x_range一开始就要设置成一个字符串的列表；要一一对应
-pCommits = figure(x_range=users, plot_height=350, title="Gerrit Stats Commits") #x_range一开始就要设置成一个字符串的列表；要一一对应
+pCommits = figure(x_range=users, plot_height=350, title="Gerrit Commits", tooltips=tipsCommits) #x_range一开始就要设置成一个字符串的列表；要一一对应
 
 pCommits.vbar(x='username', top='commits', source=source,    # 加载数据另一个方式
-       width=0.6, alpha = 0.8, legend_label="commits"
-       #color = factor_cmap('fruits', palette=Spectral6, factors=fruits),    # 设置颜色
-       #legend="fruits")
+       width=0.6, alpha = 0.8, legend_label="commits", color='green'
        )
-pLines = figure(x_range=users, plot_height=350, title="Gerrit Stats Lines")
+
+tipsLines = [("owner", "@username"), ("lines", "@lines")]
+pLines = figure(x_range=users, plot_height=350, title="Gerrit Lines", tooltips=tipsLines)
 pLines.vbar(x='username', top='lines', source=source,    # 加载数据另一个方式
        width=0.6, alpha = 0.8, legend_label="lines"
        )
-# 绘制柱状图，横轴直接显示标签
-# factor_cmap(field_name, palette, factors, start=0, end=None, nan_color='gray')：颜色转换模块，生成一个颜色转换对象
-# field_name：分类名称
-# palette：调色盘
-# factors：用于在调色盘中分颜色的参数
-# 参考文档：http://bokeh.pydata.org/en/latest/docs/reference/transform.html
-p = gridplot([[pCommits, pLines]])
 
-#p.xgrid.grid_line_color = None
-#p.legend.orientation = "horizontal"
-#p.legend.location = "top_center"
-# 其他参数设置
-#cmd -->> conda install bokeh  ;  conda install json
-save(p)
+# add plot to grid
+gpCommits = gridplot([[pCommits, pLines]])
+tabCommits = Panel(child=gpCommits, title='Changes')
+# add gridplot to tab
+tabs = Tabs(tabs=[tabCommits])
+# save file
+save(tabs)
