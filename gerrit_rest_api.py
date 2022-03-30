@@ -54,6 +54,33 @@ class gerritCounter():
                 self.userLines += ch['deletions']
         return self.userLines
 
+    def getBranches(self):
+        self.brs = []
+        for ch in self.changes:
+            br = ch['project'] + '-' + ch['branch']
+            if not br in self.brs:
+                self.brs.append(br)
+        return self.brs
+
+    def getUsersByBranch(self, branch):
+        self.brUsers = []
+        for ch in self.changes:
+            br = ch['project'] + '-' + ch['branch']
+            if br == branch:
+                user = ch['owner']['username']
+                if not user in self.brUsers:
+                    self.brUsers.append(user)
+        return self.brUsers
+
+    def getCountByBranchUser(self, branch, user):
+        self.userCommits = 0
+        for ch in self.changes:
+            br = ch['project'] + '-' + ch['branch']
+            us = ch['owner']['username']
+            if br == branch and us == user:
+                self.userCommits += 1
+        return self.userCommits
+
 class gerritChanges():
     def __init__(self, server):
         gDate = gerritDate(-7)
