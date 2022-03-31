@@ -1,3 +1,5 @@
+# Use Gerrit REST API to get changes list
+
 import requests
 import json
 import datetime
@@ -25,61 +27,7 @@ class gerritUrl():
         self.url = self.url + self.serverName + '/changes/'
         if (self.queryOptions != ''):
             self.url = self.url + self.queryOptions
-            #self.url = self.url + '+after:\'' + self.startTime + '\'' 
         return self.url
-
-class gerritCounter():
-    def __init__(self, changes):
-        self.changes = changes
-
-    def getCountByUser(self, userName):
-        self.userCommits = 0
-        for ch in self.changes:
-            if ch['owner']['username'] == userName:
-                self.userCommits += 1
-        return self.userCommits
-
-    def getUsers(self):
-        self.users = []
-        for ch in self.changes:
-            if not ch['owner']['username'] in self.users:
-                self.users.append(ch['owner']['username'])
-        return self.users
-
-    def getLinesByUser(self, userName):
-        self.userLines = 0
-        for ch in self.changes:
-            if ch['owner']['username'] == userName:
-                self.userLines += ch['insertions']
-                self.userLines += ch['deletions']
-        return self.userLines
-
-    def getBranches(self):
-        self.brs = []
-        for ch in self.changes:
-            br = ch['project'] + '-' + ch['branch']
-            if not br in self.brs:
-                self.brs.append(br)
-        return self.brs
-
-    def getUsersByBranch(self, branch):
-        self.brUsers = []
-        for ch in self.changes:
-            br = ch['project'] + '-' + ch['branch']
-            if br == branch:
-                user = ch['owner']['username']
-                if not user in self.brUsers:
-                    self.brUsers.append(user)
-        return self.brUsers
-
-    def getCountByBranchUser(self, branch, user):
-        self.userCommits = 0
-        for ch in self.changes:
-            br = ch['project'] + '-' + ch['branch']
-            us = ch['owner']['username']
-            if br == branch and us == user:
-                self.userCommits += 1
-        return self.userCommits
 
 class gerritChanges():
     def __init__(self, server):
@@ -93,17 +41,11 @@ class gerritChanges():
 
     def get(self):
         resp = requests.get(self.url)
-        #print(resp)
-        #print(resp.headers)
-        #print(resp.content)
-
         if resp.status_code != 200:
-            quit()
+            return None
 
-        #print(resp.content)
         text = resp.content
-        json_str = text.decode('UTF-8')[5:]
-        #print(json_str)
+        json_str = text.decode('UTF-8')[5:] # skip '{[(!\n'
 
         self.changes = json.loads(json_str)
         print(self.changes)
