@@ -48,7 +48,7 @@ class gerritChanges():
         json_str = text.decode('UTF-8')[5:] # skip '{[(!\n'
 
         self.changes = json.loads(json_str)
-        print(self.changes)
+        #print(self.changes)
 
         return self.changes
 

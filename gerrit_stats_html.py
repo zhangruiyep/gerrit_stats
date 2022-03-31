@@ -102,9 +102,9 @@ gpLines = []
 for user in users:
     userBrs = counter.users[users.index(user)].branches
     userCommits = counter.users[users.index(user)].brCommits
-    print(user)
-    print(userBrs)
-    print(userCommits)
+    #print(user)
+    #print(userBrs)
+    #print(userCommits)
     colors = []
     for br in userBrs:
         colors.append(Set3[12][userBrs.index(br)])
