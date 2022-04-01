@@ -1,4 +1,5 @@
-import datetime
+import sys
+import datetime, calendar
 from math import pi
 from bokeh.plotting import figure, show, output_file, save
 from bokeh.models import ColumnDataSource, Tabs, Panel
@@ -9,45 +10,31 @@ from bokeh.transform import cumsum
 from gerrit_rest_api import *
 from gerrit_data import *
 
-changes = gerritChanges('dal-server-2:8081')
+if len(sys.argv) > 1 and sys.argv[1] == 'month':
+    period = 'month'
+else:
+    period = 'week'
+
+changes = gerritChanges('dal-server-2:8081', period)
 counter = gerritCounter(changes.get())
 (users, userCommits, userLines) = counter.getUserCommitsLines()
 (brs, brCommits, brLines) = counter.getBranchCommitsLines()
-#all_commits = []
-#lines = []
-#for user in users:
-    #print(user +  str(counter.getCountByUser(user)))
-    #all_commits.append(counter.getCountByUser(user))
-    #lines.append(counter.getLinesByUser(user))
-#print(users)
-#print(all_commits)
-#print(lines)
 
-#brs = counter.getBranches()
-#print(brs)
-
-startDate = gerritDate(-7).get()
+startDate = gerritDate(period).get()
 html = 'gerrit_stats_' + startDate + '_' + datetime.datetime.now().strftime('%Y-%m-%d') + '.html'
 output_file(filename=html, title="Gerrit Stats")
 
 source = ColumnDataSource(data=dict(username=users, commits=userCommits, lines=userLines))
-# 创建一个包含标签的data，对象类型为ColumnDataSource
 
-tipsCommits = [
-    ("author", "@username"),
-    ("commits", "@commits"),
-]
-
+tipsCommits = [("author", "@username"), ("commits", "@commits"),]
 pCommits = figure(x_range=users, plot_height=350, title="Author Commits", tooltips=tipsCommits)
 pCommits.vbar(x='username', top='commits', source=source,
-       width=0.6, alpha = 0.8, legend_label="commits", color='green'
-       )
+       width=0.6, alpha = 0.8, legend_label="commits", color='green')
 
 tipsLines = [("author", "@username"), ("lines", "@lines")]
 pLines = figure(x_range=users, plot_height=350, title="Author Lines", tooltips=tipsLines)
 pLines.vbar(x='username', top='lines', source=source,
-       width=0.6, alpha = 0.8, legend_label="lines"
-       )
+       width=0.6, alpha = 0.8, legend_label="lines")
 
 
 source = ColumnDataSource(data=dict(branch=brs, commits=brCommits, lines=brLines))
@@ -55,15 +42,14 @@ tipsBrCommits = [("branch", "@branch"), ("commits", "@commits")]
 pBrCommits = figure(x_range=brs, plot_height=500, title="Branch Commits", tooltips=tipsBrCommits)
 pBrCommits.xaxis.major_label_orientation = "vertical"
 pBrCommits.vbar(x='branch', top='commits', source=source,
-       width=0.6, alpha = 0.8, legend_label="commits", color='purple'
-       )
+       width=0.6, alpha = 0.8, legend_label="commits", color='purple')
 
 tipsBrLines = [("branch", "@branch"), ("lines", "@lines")]
 pBrLines = figure(x_range=brs, plot_height=500, title="Branch Lines", tooltips=tipsBrLines)
 pBrLines.xaxis.major_label_orientation = "vertical"
 pBrLines.vbar(x='branch', top='lines', source=source,
-       width=0.6, alpha = 0.8, legend_label="lines", color='brown'
-       )
+       width=0.6, alpha = 0.8, legend_label="lines", color='brown')
+
 # add plot to grid
 gpCommits = gridplot([[pCommits, pLines], [pBrCommits, pBrLines]])
 # add gridplot to tab
@@ -127,6 +113,6 @@ tabUsers = Panel(child=gpUsers, title='Authors')
 
 # add gridplot to tab
 tabs = Tabs(tabs=[tabCommits, tabBranches, tabUsers])
-#tabs = Tabs(tabs=[tabCommits])
+
 # save file
 save(tabs)

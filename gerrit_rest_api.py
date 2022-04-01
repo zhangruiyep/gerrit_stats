@@ -2,21 +2,34 @@
 
 import requests
 import json
-import datetime
+import datetime, calendar
 
 class gerritDate():
-    def __init__(self, delta):
-        self.now = datetime.datetime.now()
-        self.gerritDate = self.now + datetime.timedelta(days=delta)
+    def __init__(self, period):
+        self.today = datetime.datetime.today()
+        if period == 'month':
+            # find last month 1st day
+            if self.today.month == 1:
+                month = 12
+                year = self.today.year - 1
+            else:
+                month = self.today.month - 1
+                year = self.today.year
+            day = 1
+            self.date = datetime.date(year, month, day)
+        else:
+            # find last monday
+            self.date = self.today + datetime.timedelta(days=-1)
+            while self.date.weekday() != calendar.MONDAY:
+                self.date = self.date + datetime.timedelta(days=-1)
 
     def get(self):
-        return self.gerritDate.strftime('%Y-%m-%d')
+        return self.date.strftime('%Y-%m-%d')
 
 class gerritUrl():
     def __init__(self, serverName, queryOptions, userName=None, password=None):
         self.serverName = serverName
         self.queryOptions = queryOptions
-        #self.startTime = startTime
         self.userName = userName
         self.password = password
 
@@ -30,8 +43,8 @@ class gerritUrl():
         return self.url
 
 class gerritChanges():
-    def __init__(self, server):
-        gDate = gerritDate(-7)
+    def __init__(self, server, period):
+        gDate = gerritDate(period)
         #UTC time
         startDate = gDate.get() + ' 00:00:00'
         #print(startDate)
