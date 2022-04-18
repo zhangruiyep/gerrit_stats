@@ -39,16 +39,16 @@ pLines.vbar(x='username', top='lines', source=source,
 
 source = ColumnDataSource(data=dict(branch=brs, commits=brCommits, lines=brLines))
 tipsBrCommits = [("branch", "@branch"), ("commits", "@commits")]
-pBrCommits = figure(x_range=brs, plot_height=500, title="Branch Commits", tooltips=tipsBrCommits)
-pBrCommits.xaxis.major_label_orientation = "vertical"
-pBrCommits.vbar(x='branch', top='commits', source=source,
-       width=0.6, alpha = 0.8, legend_label="commits", color='purple')
+pBrCommits = figure(y_range=brs, plot_height=450, title="Branch Commits", tooltips=tipsBrCommits)
+#pBrCommits.xaxis.major_label_orientation = "vertical"
+pBrCommits.hbar(y='branch', right='commits', source=source,
+       height=0.6, alpha = 0.8, legend_label="commits", color='purple')
 
 tipsBrLines = [("branch", "@branch"), ("lines", "@lines")]
-pBrLines = figure(x_range=brs, plot_height=500, title="Branch Lines", tooltips=tipsBrLines)
-pBrLines.xaxis.major_label_orientation = "vertical"
-pBrLines.vbar(x='branch', top='lines', source=source,
-       width=0.6, alpha = 0.8, legend_label="lines", color='brown')
+pBrLines = figure(y_range=brs, plot_height=450, title="Branch Lines", tooltips=tipsBrLines)
+#pBrLines.xaxis.major_label_orientation = "vertical"
+pBrLines.hbar(y='branch', right='lines', source=source,
+       height=0.6, alpha = 0.8, legend_label="lines", color='brown')
 
 # add plot to grid
 gpCommits = gridplot([[pCommits, pLines], [pBrCommits, pBrLines]])
