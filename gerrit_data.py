@@ -7,7 +7,7 @@ class gerritUser():
         self.name = name
         self.commits = 0
         self.lines = 0
-        self.lineMax = 2000 # ignore line > max to filter project import
+        self.lineMax = 1000 # ignore line > max to filter project import
         self.branches = []
         self.brCommits = []
         self.brLines = []
@@ -38,7 +38,7 @@ class gerritBranch():
         self.name = name
         self.commits = 0
         self.lines = 0
-        self.lineMax = 2000 # ignore line > max to filter project import
+        self.lineMax = 1000 # ignore line > max to filter project import
         self.users = []
         self.userCommits = []
         self.userLines = []
