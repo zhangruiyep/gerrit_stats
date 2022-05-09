@@ -16,15 +16,20 @@ class gerritDate():
                 month = self.today.month - 1
                 year = self.today.year
             day = 1
-            self.date = datetime.date(year, month, day)
+            self.startDate = datetime.date(year, month, day)
+            self.endDate = datetime.date(self.today.year, self.today.month, day)
         else:
             # find last monday
-            self.date = self.today + datetime.timedelta(days=-1)
-            while self.date.weekday() != calendar.MONDAY:
-                self.date = self.date + datetime.timedelta(days=-1)
+            self.endDate = self.today
+            while self.endDate.weekday() != calendar.MONDAY:
+                self.endDate = self.endDate + datetime.timedelta(days=-1)
+            self.startDate = self.endDate + datetime.timedelta(days=-7)
 
-    def get(self):
-        return self.date.strftime('%Y-%m-%d')
+    def getStart(self):
+        return self.startDate.strftime('%Y-%m-%d')
+    
+    def getEnd(self):
+        return self.endDate.strftime('%Y-%m-%d')
 
 class gerritUrl():
     def __init__(self, serverName, queryOptions, userName=None, password=None):
@@ -46,9 +51,10 @@ class gerritChanges():
     def __init__(self, server, period):
         gDate = gerritDate(period)
         #UTC time
-        startDate = gDate.get() + ' 00:00:00'
+        startDate = gDate.getStart() + ' 00:00:00'
+        endDate = gDate.getEnd() + ' 00:00:00'
         #print(startDate)
-        options = '?q=status:merged+after:\"' + startDate + '\"&o=DETAILED_ACCOUNTS'
+        options = '?q=status:merged+after:\"' + startDate + '\"+before:\"' + endDate + '\"&o=DETAILED_ACCOUNTS'
         gUrl = gerritUrl(server, options, 'admin', 'admin')
         self.url = gUrl.get()
 

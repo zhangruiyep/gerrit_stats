@@ -20,8 +20,10 @@ counter = gerritCounter(changes.get())
 (users, userCommits, userLines) = counter.getUserCommitsLines()
 (brs, brCommits, brLines) = counter.getBranchCommitsLines()
 
-startDate = gerritDate(period).get()
-html = 'gerrit_stats_' + startDate + '_' + datetime.datetime.now().strftime('%Y-%m-%d') + '.html'
+gDate = gerritDate(period)
+startDate = gDate.getStart()
+endDate = gDate.getEnd()
+html = 'gerrit_stats_' + startDate + '_' + endDate + '.html'
 output_file(filename=html, title="Gerrit Stats")
 
 source = ColumnDataSource(data=dict(username=users, commits=userCommits, lines=userLines))
