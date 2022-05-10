@@ -9,6 +9,7 @@ from bokeh.transform import cumsum
 
 from gerrit_rest_api import *
 from gerrit_data import *
+from gerrit_date import *
 
 def usage():
     print('Usage: python gerrit_stats_html.py [period] [start date] [end date]')
