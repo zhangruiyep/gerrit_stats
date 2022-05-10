@@ -10,19 +10,41 @@ from bokeh.transform import cumsum
 from gerrit_rest_api import *
 from gerrit_data import *
 
-if len(sys.argv) > 1 and sys.argv[1] == 'month':
-    period = 'month'
-else:
-    period = 'week'
+def usage():
+    print('Usage: python gerrit_stats_html.py [period] [start date] [end date]')
+    print('\tperiod:\tweek|month|spec')
+    print('\tstart date|end date:\tNeeded if period is spec. Format yyyy-mm-dd.')
 
-changes = gerritChanges('dal-server-2:8081', period)
+period = 'week'
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'month':
+        period = 'month'
+    elif sys.argv[1] == 'spec':
+        # check input
+        if len(sys.argv) > 3:
+            try:
+                datetime.datetime.strptime(sys.argv[2], "%Y-%m-%d")
+                startDate = sys.argv[2]
+                datetime.datetime.strptime(sys.argv[3], "%Y-%m-%d")
+                endDate = sys.argv[3]
+                period = 'spec'
+            except:
+                print('Invalid args, use default period "week"')
+                usage()
+        else:
+            print('More args needed for "spec"')
+            usage()
+
+if period != 'spec':
+    gDate = gerritDate(period)
+    startDate = gDate.getStart()
+    endDate = gDate.getEnd()
+
+changes = gerritChanges('dal-server-2:8081', startDate, endDate)
 counter = gerritCounter(changes.get())
 (users, userCommits, userLines) = counter.getUserCommitsLines()
 (brs, brCommits, brLines) = counter.getBranchCommitsLines()
 
-gDate = gerritDate(period)
-startDate = gDate.getStart()
-endDate = gDate.getEnd()
 html = 'gerrit_stats_' + startDate + '_' + endDate + '.html'
 output_file(filename=html, title="Gerrit Stats")
 

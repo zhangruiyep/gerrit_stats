@@ -48,12 +48,9 @@ class gerritUrl():
         return self.url
 
 class gerritChanges():
-    def __init__(self, server, period):
-        gDate = gerritDate(period)
-        #UTC time
-        startDate = gDate.getStart() + ' 00:00:00'
-        endDate = gDate.getEnd() + ' 00:00:00'
-        #print(startDate)
+    def __init__(self, server, sD, eD):
+        startDate = sD + ' 00:00:00'
+        endDate = eD + ' 00:00:00'
         options = '?q=status:merged+after:\"' + startDate + '\"+before:\"' + endDate + '\"&o=DETAILED_ACCOUNTS'
         gUrl = gerritUrl(server, options, 'admin', 'admin')
         self.url = gUrl.get()
