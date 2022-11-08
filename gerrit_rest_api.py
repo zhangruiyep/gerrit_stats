@@ -33,7 +33,7 @@ class gerritChanges():
         url = self.url
         self.changes = []
         while (more):
-            print(url)
+            #print(url)
             resp = requests.get(url)
             if resp.status_code != 200:
                 return None
@@ -43,7 +43,7 @@ class gerritChanges():
 
             self.changes = self.changes + json.loads(json_str)
             #print(self.changes)
-            print(self.changes[-1])
+            #print(self.changes[-1])
         
             try:
                 more = self.changes[-1]['_more_changes']
