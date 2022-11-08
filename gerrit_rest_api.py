@@ -28,15 +28,30 @@ class gerritChanges():
         self.url = gUrl.get()
 
     def get(self):
-        resp = requests.get(self.url)
-        if resp.status_code != 200:
-            return None
+        more = True
+        s = 0
+        url = self.url
+        self.changes = []
+        while (more):
+            print(url)
+            resp = requests.get(url)
+            if resp.status_code != 200:
+                return None
 
-        text = resp.content
-        json_str = text.decode('UTF-8')[5:] # skip '{[(!\n'
+            text = resp.content
+            json_str = text.decode('UTF-8')[5:] # skip '{[(!\n'
 
-        self.changes = json.loads(json_str)
-        #print(self.changes)
+            self.changes = self.changes + json.loads(json_str)
+            #print(self.changes)
+            print(self.changes[-1])
+        
+            try:
+                more = self.changes[-1]['_more_changes']
+            except:
+                more = False
+
+            s += 500
+            url = self.url + '&S=' + str(s)
 
         return self.changes
 

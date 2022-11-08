@@ -20,7 +20,9 @@
 
 Python 3.x
 
-bokeh
+bokeh 2.x (2.3.3可用，3.0.1不可用）
+
+requests
 
 Gerrit REST API的权限
 
@@ -34,6 +36,3 @@ month: 从上月1日开始，到本月1日结束。
 
 spec: 指定开始结束日期。日期格式：yyyy-mm-dd。
 
-### 存在的问题：
-
-如果changes过多，会被默认limit（500??）限制数量，导致结果不完整。

@@ -118,7 +118,7 @@ for user in users:
     #print(userCommits)
     colors = []
     for br in userBrs:
-        colors.append(Set3[12][userBrs.index(br)])
+        colors.append(Set3[12][userBrs.index(br) % 12])
     angles = []
     for commit in userCommits:
     	angles.append(commit/sum(userCommits)*2*pi)
