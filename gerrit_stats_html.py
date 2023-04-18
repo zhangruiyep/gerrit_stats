@@ -37,9 +37,9 @@ if len(sys.argv) > 1:
             usage()
 
 if period != 'spec':
-    gDate = gerritDate(period)
-    startDate = gDate.getStart()
-    endDate = gDate.getEnd()
+    gDate = GerritDate(period)
+    startDate = gDate.get_start()
+    endDate = gDate.get_end()
 
 changes = gerritChanges('dal-server-2:8081', startDate, endDate)
 counter = gerritCounter(changes.get())
