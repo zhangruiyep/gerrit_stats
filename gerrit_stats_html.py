@@ -41,7 +41,7 @@ if period != 'spec':
     startDate = gDate.get_start()
     endDate = gDate.get_end()
 
-changes = gerritChanges('dal-server-2:8081', startDate, endDate)
+changes = GerritChanges('dal-server-2:8081', startDate, endDate)
 counter = gerritCounter(changes.get())
 (users, userCommits, userLines) = counter.getUserCommitsLines()
 (brs, brCommits, brLines) = counter.getBranchCommitsLines()
